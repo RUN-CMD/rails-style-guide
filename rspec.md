@@ -119,7 +119,7 @@
   ```Ruby
   # bad
   describe Article do
-    subject { Fabricate(:article) }
+    subject { create(:article) }
 
     it 'has the current date as creation date' do
       subject.creation_date.should == Date.today
@@ -128,7 +128,7 @@
 
   # good
   describe Article do
-    subject { Fabricate(:article) }
+    subject { create(:article) }
     its(:creation_date) { should == Date.today }
   end  
   ```
