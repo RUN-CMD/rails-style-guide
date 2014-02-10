@@ -173,9 +173,9 @@
 
 ### Views
 
-* The directory structure of the view specs `spec/views` matches the
+* The directory structure of the view specs `spec/unit/views` matches the
   one in `app/views`. For example the specs for the views in
-  `app/views/users` are placed in `spec/views/users`.
+  `app/views/users` are placed in `spec/unit/views/users`.
 * The naming convention for the view specs is adding `_spec.rb` to the
   view name, for example the view `_form.html.haml` has a
   corresponding spec `_form.html.haml_spec.rb`.
@@ -185,7 +185,7 @@
   called without arguments.
 
     ```Ruby
-    # spec/views/articles/new.html.haml_spec.rb
+    # spec/unit/views/articles/new.html.haml_spec.rb
     require 'spec_helper'
 
     describe 'articles/new.html.haml' do
@@ -199,7 +199,7 @@
   uses and are supplied by the controller.
 
     ```Ruby
-    # spec/views/articles/edit.html.haml_spec.rb
+    # spec/unit/views/articles/edit.html.haml_spec.rb
     describe 'articles/edit.html.haml' do
     it 'renders the form for a new article creation' do
       assign(
@@ -231,7 +231,7 @@
     # app/views/articles/show.html.haml
     = "Published at: #{formatted_date(@article.published_at)}"
 
-    # spec/views/articles/show.html.haml_spec.rb
+    # spec/unit/views/articles/show.html.haml_spec.rb
     describe 'articles/show.html.haml' do
       it 'displays the formatted date of article publishing' do
         article = mock_model(Article, published_at: Date.new(2012, 01, 01))
@@ -245,10 +245,13 @@
     end
     ```
 
-* The helpers specs are separated from the view specs in the `spec/helpers` directory.
+* The helpers specs are separated from the view specs in the `spec/unit/helpers` directory.
 
 ### Controllers
 
+* The directory structure of the controller specs in `spec/unit/controllers` matches the
+  one in `app/controllers`. For example the specs for the controller in
+  `app/controllers/admin/users_controller.rb` are placed in `spec/unit/controllers/admin/users_controller_spec.rb`.
 * Mock the models and stub their methods. Testing the controller should not depend on the model creation.
 * Test only the behaviour the controller should be responsible about:
   * Execution of particular methods
@@ -257,7 +260,7 @@
 
         ```Ruby
         # Example of a commonly used controller spec
-        # spec/controllers/articles_controller_spec.rb
+        # spec/unit/controllers/articles_controller_spec.rb
         # We are interested only in the actions the controller should perform
         # So we are mocking the model creation and stubbing its methods
         # And we concentrate only on the things the controller should do
@@ -342,6 +345,9 @@
 
 ### Models
 
+* The directory structure of the model specs in `spec/unit/models` matches the
+  one in `app/models`. For example the specs for the model
+  `app/models/article.rb` are placed in `spec/unit/models/article_spec.rb`.
 * Do not mock the models in their own specs.
 * Use factories to make real objects.
 * It is acceptable to mock other models or child objects.
