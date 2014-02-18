@@ -102,63 +102,38 @@
     before(:each) { @article = create(:article) }
     ```
 
-* Use `subject` when possible
-
-    ```Ruby
-    describe Article do
-      subject { create(:article) }
-
-      it 'is not published on creation' do
-        subject.should_not be_published
-      end
-    end
-    ```
-    
-* Use `its` if you find that your example's explanation string is redundant
-
-  ```Ruby
-  # bad
-  describe Article do
-    subject { create(:article) }
-
-    it 'has the current date as creation date' do
-      subject.creation_date.should == Date.today
-    end
-  end
-
-  # good
-  describe Article do
-    subject { create(:article) }
-    its(:creation_date) { should == Date.today }
-  end  
-  ```
-
 * Use `shared_examples` if you want to create a spec group that can be shared by many other tests.
 
    ```Ruby
    # bad
     describe Array do
-      subject { Array.new [7, 2, 4] }
+      let(:numbers) { Array.new [7, 2, 4] }
 
       context "initialized with 3 items" do
-        its(:size) { should eq(3) }
+        it "has a size of 3" do
+          numbers.size.should eq(3)
+        end
       end
     end
 
     describe Set do
-      subject { Set.new [7, 2, 4] }
+      let(:numbers) { Set.new [7, 2, 4] }
 
       context "initialized with 3 items" do
-        its(:size) { should eq(3) }
+        it "has a size of 3" do
+          numbers.size.should eq(3)
+        end
       end
     end
 
    #good
     shared_examples "a collection" do
-      subject { described_class.new([7, 2, 4]) }
+      let(:numbers) { described_class.new([7, 2, 4]) }
 
       context "initialized with 3 items" do
-        its(:size) { should eq(3) }
+        it "has a size of 3" do
+          numbers.size.should eq(3)
+        end
       end
     end
 
@@ -431,14 +406,22 @@ which should be validated. Using `be_valid` does not guarantee that the problem
       let(:subscriber) { mock_model(Subscription, email: 'johndoe@test.com', name: 'John Doe') }
 
       describe 'successful registration email' do
-        subject { SubscriptionMailer.successful_registration_email(subscriber) }
+        let(:email) { SubscriptionMailer.successful_registration_email(subscriber) }
 
-        its(:subject) { should == 'Successful Registration!' }
-        its(:from) { should == ['info@your_site.com'] }
-        its(:to) { should == [subscriber.email] }
+        it "has the correct value for the 'subject' attribute" do
+          email.subject.should == 'Successful Registration!'
+        end
+        
+        it "has the correct value for the 'from' attribute" do
+          email.from.should == ['info@your_site.com']
+        end
+        
+        it "has the correct value for the 'to' attribute" do
+          email.to.should == [subscriber.email]
+        end
 
         it 'contains the subscriber name' do
-          subject.body.encoded.should match(subscriber.name)
+          email.body.encoded.should match(subscriber.name)
         end
       end
     end
