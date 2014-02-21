@@ -474,6 +474,131 @@ Here is a sample spec of a [carrierwave](https://github.com/jnicklas/carrierwave
 
     ```
 
+## Unit, Integration, and Functional Tests
+
+### Unit Tests
+
+A unit test must focus on the output or the effect of one method called in isolation.
+A unit test's expectation will test one of the following:
+ * one characteristic of the return value
+   * such as its data type, size, scalar value, ...
+ * whether a particular method on a particular object was called
+   * and optionally how many times it was called
+   * and optionally what parameters it was called with
+   * but never what that method's return value was
+     * eg. never `stream_assembly.should_receive(:video_description).and_return(a_specific_video_description)`
+
+### Integration Tests
+
+An integration test ensures that parts of the application interact correctly.
+It ensures that object interfaces are compatible.
+
+Consider the following scenario:
+
+ * a unit test exists that ensures that a node's service layer calls an API endpoint `/foo`, which is mocked
+
+client code:
+
+    def service(client)
+      ... node node node ...
+      client.call('/foo')
+    end
+
+client test:
+
+    it 'calls the foo endpoint' do
+        client = double(:client)
+        client.should_receive(:call).with('/foo')
+        service(client)
+    end
+ 
+ * another unit test exists that ensures that API endpoint `/foo` returns `bar`
+
+api code:
+
+    def foo
+      'bar'
+    end
+
+api test:
+
+    context 'any request' do
+      it "returns 'bar'" do
+        expect(api.foo).to eql('bar')
+      end
+    end
+
+Now, we update the `/foo` API endpoint to require parameter `quux`.
+
+api code:
+
+    def foo(params)
+      raise unless params[:quux]
+      'bar'
+    end
+
+The API endpoint's unit test breaks, because `quux` is now required. So we update the unit test, and it passes.
+
+api test:
+
+    context 'a request with all required parameters' do
+      it "returns 'bar'" do
+        expect(api.foo(:quux => true) ).to eql('bar')
+      end
+    end
+
+However, the node's service layer is still calling `/foo` without the required parameter,
+_and the service layer's unit test is still passing_, because we mocked the endpoint.
+
+An integration test would involve the complete API call's round trip, which excercises both sides of the API call in one transaction.
+
+An integration test that starts in the node's service layer and calls the API endpoint without the required parameter would fail.
+
+integration test:
+
+    context 'a client calling the api' do
+      it 'returns bar' do
+        expect(client.call('/foo') ).to eql 'bar'
+      end
+    end
+
+...and would remind us to update the client test
+
+client test:
+
+    it 'calls the foo endpoint with the correct parameters' do
+        client = double(:client)
+        client.should_receive(:call).with('/foo?quux=true')
+        service(client)
+    end
+
+...and update the client code
+
+client code:
+
+    def service(client)
+      ... node node node ...
+      ... maybe even set the quux value correctly ...
+      client.call("/foo?quux=#{quux}")
+    end
+
+...and finally update the integration test:
+
+    context 'a client calling the api with the correct parameters' do
+      it 'returns bar' do
+        expect(client.call('/foo?quux=true') ).to eql 'bar'
+      end
+    end
+
+### Functional Tests
+
+A functional test ensures that the application is meeting the business needs of the customer.
+It ensures that user stories are being carried out consistently and completely.
+
+Functional tests often take the form of integration tests, but by definition they test the product's features that the customer specifically relies on.
+
+This is generally where something like Cucumber comes in...
+
 # Further Reading
 
 There are a few excellent resources on Rails style, that you should
